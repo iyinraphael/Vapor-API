@@ -15,9 +15,11 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     var middlewares = MiddlewareConfig() // Create _empty_ middleware config
     // middlewares.use(FileMiddleware.self) // Serves files from `Public/` directory
     middlewares.use(ErrorMiddleware.self) // Catches errors and converts to HTTP response
+    // Guard Middleware
+    // Auth Middleware
     services.register(middlewares)
 
-    // Configure a SQLite database
+    // Configure a SQLite database Question about storage path
     let sqlite = try SQLiteDatabase(storage: .memory)
 
     // Register the configured SQLite database to the database config.
