@@ -1,4 +1,5 @@
 import Vapor
+import FluentSQLite
 
 /// Controls basic CRUD operations on `Todo`s.
 final class TodoController: RouteCollection {
@@ -10,12 +11,43 @@ final class TodoController: RouteCollection {
         //baseURL.com/todos/create
         router.post("todos", "create", use: createTodoHandler)
         router.get("todos", "all", use: getAllTodosHandler)
+        
+        //baseURL.com/todos/
+        router.get("todos", Int.parameter, use: getAllTodosHandler )
+        
+        router.delete("todos", Int.parameter, use: deleteTodoWithIDHandler)
+    }
+    
+    func deleteTodoWithIDHandler(_ req: Request) throws -> Future<HTTPResponseStatus> {
+        
+        let idParameter = try req.parameters.next(Int.self)
+        
+        return Todo
+            .query(on: req)
+            .filter(\.id == idParameter)
+            .first()
+            .unwrap(or: HTTPError(identifier: "com.LambdaSchool.API", reason: "There's no todo with that identifiers: \(idParameter)"))
+            .delete(on: req)
+            .transform(to: HTTPResponseStatus.noContent)
+    }
+    
+    func getTodosWithIDHandler(_ req: Request) throws -> Future<Todo> {
+        
+        let idParameter = try req.parameters.next(Int.self)
+        
+        return Todo
+            .query(on: req)
+            .filter(\.id, .equal, idParameter)
+            .first()
+            .unwrap(or: HTTPError(identifier: "com.LambdaSchool.API", reason: "There's no todo with that identifiers: \(idParameter)"))
+        
+        
+        
     }
     
     func getAllTodosHandler(_ req: Request) throws -> Future<[Todo]> {
         
         //How do we get our tods?
-        
         return Todo.query(on: req).all()
         
     }
